@@ -26,17 +26,17 @@ export default class Video extends Component {
   setNativeProps(nativeProps) {
     this._root.setNativeProps(nativeProps);
   }
-  
+
   toTypeString(x) {
     switch (typeof x) {
       case "object":
-        return x instanceof Date 
-          ? x.toISOString() 
+        return x instanceof Date
+          ? x.toISOString()
           : JSON.stringify(x); // object, null
       case "undefined":
         return "";
       default: // boolean, number, string
-        return x.toString();      
+        return x.toString();
     }
   }
 
@@ -249,32 +249,38 @@ export default class Video extends Component {
     });
 
     if (this.props.poster && this.state.showPoster) {
+
+    const posterSource = resolveAssetSource(this.props.poster) || {};
+    const resolvePosterUri = function (posterObject) {
       const posterStyle = {
         position: 'absolute',
         left: 0,
         top: 0,
         right: 0,
         bottom: 0,
-        resizeMode: this.props.posterResizeMode || 'contain'
+        width: null,
+        height: null,
+        resizeMode: 'cover'
       };
 
-    const posterSource = resolveAssetSource(this.props.poster) || {};
-
-    let posterUri = posterSource.uri || '';
-    if (posterUri && posterUri.match(/^\//)) {
-      posterUri = `file://${posterUri}`;
+      let posterUri = posterObject.uri || '';
+      if (posterUri && posterUri.match(/^\//)) {
+        posterUri = `file://${posterUri}`;
+        return (<Image style={posterStyle} source={{uri: posterUri}} />)
+      }
+      else {
+        return (<Image style={posterStyle} source={posterObject} />)
+      }
     }
-     
+
+
       return (
         <View style={nativeProps.style}>
           <RCTVideo
             ref={this._assignRoot}
             {...nativeProps}
           />
-          <Image
-            style={posterStyle}
-            source={posterUri}
-          />
+          {resolvePosterUri(posterSource)}
         </View>
       );
     }
