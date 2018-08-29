@@ -258,6 +258,13 @@ export default class Video extends Component {
         resizeMode: this.props.posterResizeMode || 'contain'
       };
 
+    const posterSource = resolveAssetSource(this.props.poster) || {};
+
+    let posterUri = posterSource.uri || '';
+    if (posterUri && posterUri.match(/^\//)) {
+      posterUri = `file://${posterUri}`;
+    }
+     
       return (
         <View style={nativeProps.style}>
           <RCTVideo
@@ -266,7 +273,7 @@ export default class Video extends Component {
           />
           <Image
             style={posterStyle}
-            source={{uri: this.props.poster}}
+            source={posterUri}
           />
         </View>
       );
@@ -312,7 +319,13 @@ Video.propTypes = {
     PropTypes.number
   ]),
   resizeMode: PropTypes.string,
-  poster: PropTypes.string,
+  poster: PropTypes.oneOfType([
+    PropTypes.shape({
+      uri: PropTypes.string
+    }),
+    // Opaque type returned by require('./video.mp4')
+    PropTypes.number
+  ]),
   posterResizeMode: Image.propTypes.resizeMode,
   repeat: PropTypes.bool,
   allowsExternalPlayback: PropTypes.bool,
